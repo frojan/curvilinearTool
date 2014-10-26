@@ -68,8 +68,9 @@
     border-radius: 100px;
     bottom: -10px;
     left: -10px;
-
-    -webkit-animation: animationY cubic-bezier(0.86,0.096,0.9625,0.21) 2s infinite;
+    
+    /*set cubic-bezier by yourself after find the right value in .parameters*/
+    -webkit-animation: animationY cubic-bezier(1,0,0,1) 2s infinite;
   }
   @-webkit-keyframes animationX {
       0% {
@@ -282,7 +283,7 @@
         displayContext.stroke();
         oldX = tarX;
         oldY = tarY;
-      },10);
+      },0);
     });
   </script>
 </body>
