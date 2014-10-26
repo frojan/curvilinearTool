@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>curvilinearTool</title>
+
+  <style>
+  * {padding:0px;margin:0px;list-style:none;} 
+  body{
+    background: #ffffff;
+    padding: 40px;
+  }    
+  input{
+    margin: 0px;
+    padding: 0px;
+    border: 0px;
+  }
+  .controller{
+    position:relative;
+    float: left;
+  }
+  .parameters{
+    font-family: "Microsoft Yahei", "\5b8b\4f53", Arial, Sans-serif;
+    font-size: 20px;
+  }
+  .parameters input{
+    font-family: "Microsoft Yahei", "\5b8b\4f53", Arial, Sans-serif;
+    font-size: 20px;
+  }
+  .sta{
+    position: absolute;
+    top: 390px;
+    left:-40px;
+  }
+  .end{
+    position: absolute;
+    top: -10px;
+    right: -40px;
+  }
+  .cpt{
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background-color: rgba(0,0,255,0.5);
+    border-radius: 100px;
+  }
+  .display{
+    float: left;
+    margin-left: 40px;
+    width: 400px;
+    height:400px;
+    background-color: #eeeeee;
+
+  }
+  .clearfix{
+    content: ".";
+    display: block;
+    height: 0;
+    visibility: hidden;
+    clear: both;
+    zoom:1;
+  }
+ </style>
+</head>
+<body>
+  <div class="controller">
+    <canvas id="canvas" width='400' height='400'>
+      Canvas not supported
+    </canvas>
+    <div class="sta">(0,0)</div>
+    <div class="end">(1,1)</div>
+    <div class="cpt" id="cpt1"></div>
+    <div class="cpt" id="cpt2"></div>
+    <div class="parameters">
+      cubic-bezier:
+      <div class="par">con1X : <input id="parameter1" type="text" value="1"/></div>
+      <div class="par">con1Y : <input id="parameter2" type="text" value="0"/></div>
+      <div class="par">con2X : <input id="parameter3" type="text" value="0"/></div>
+      <div class="par">con2Y : <input id="parameter4" type="text" value="1"/></div>
+    </div>
+  </div>
+
+  <div class="display">
+    
+  </div>
+  
+
+  <div class="clearfix"></div>
+  <script src="js/jquery.js" type="text/javascript"></script>
+  <script type="text/javascript">
+    $(function(){
+      var canvas = document.getElementById('canvas');
+      var context = canvas.getContext('2d');
+
+      var width = canvas.width;
+      var height = canvas.height;
+
+      var girdNum = 10;
+      var girdLen = 40;
+
+      context.strokeStyle = "#aaaaaa";
+      context.lineWidth = 1;
+      var i,j;
+      for(i=0;i<=girdNum;i++){
+        context.beginPath();
+        context.moveTo(0,i*girdLen);
+        context.lineTo(width,i*girdLen);
+        context.stroke();
+      }
+      for(i=0;i<=girdNum;i++){
+        context.beginPath();
+        context.moveTo(i*girdLen,0);
+        context.lineTo(i*girdLen,height);
+        context.stroke();
+      }
+
+      //sava background image
+      var background = context.getImageData(0,0,canvas.width,canvas.height);
+
+      var parameter1 = $("#parameter1");
+      var parameter2 = $("#parameter2");
+      var parameter3 = $("#parameter3");
+      var parameter4 = $("#parameter4");
+      $("#cpt1").css("left",400*parameter1.val()-5);
+      $("#cpt1").css("top",400*(1-parameter2.val())-5);
+      $("#cpt2").css("left",400*parameter3.val()-5);
+      $("#cpt2").css("top",400*(1-parameter4.val())-5);
+      drawBezier(parameter1.val(),parameter2.val(),parameter3.val(),parameter4.val());
+
+      
+
+      var isMoving = false;
+      var target;
+
+      $('.cpt').on('mousedown',function(evt){
+        isMoving = true;
+        target = $(this);
+        console.log("down");
+      });
+
+      $('html').on('mouseup',function(evt){
+        isMoving = false;
+        console.log("up");
+      });
+
+      $('html').on('mousemove',function(evt){
+        if(isMoving){
+          var mousePos = getMousePos(canvas, evt);
+          if(mousePos.x<0){
+            mousePos.x=0;
+          }else if(mousePos.x>400){
+            mousePos.x=400;
+          }
+          if(mousePos.y<0){
+            mousePos.y=0;
+          }else if(mousePos.y>400){
+            mousePos.y=400;
+          }
+
+          target.css("left",mousePos.x-5);
+          target.css("top",mousePos.y-5);
+          if(target.attr("id") == "cpt1"){
+            parameter1.val(mousePos.x/400);
+            parameter2.val(1 - mousePos.y/400);
+            drawBezier(parameter1.val(),parameter2.val(),parameter3.val(),parameter4.val());
+          }else{
+            parameter3.val(mousePos.x/400);
+            parameter4.val(1- mousePos.y/400);
+            drawBezier(parameter1.val(),parameter2.val(),parameter3.val(),parameter4.val());
+          }
+          
+          // console.log("x:"+mousePos.x+","+mousePos.y);
+        }
+        return false;
+      });
+   
+      
+      //Get Mouse Position   
+      function getMousePos(canvas, evt){
+        var rect = canvas.getBoundingClientRect();   
+        return { 
+          x: evt.clientX - rect.left,   
+          y: evt.clientY - rect.top
+        };
+      }
+      $(".par").change(function(){
+        var con1X = parameter1.val();
+        var con1Y = parameter2.val();
+        var con2X = parameter3.val();
+        var con2Y = parameter4.val();
+        $("#cpt1").css("left",400*con1X-5);
+        $("#cpt1").css("top",400*(1-con1Y)-5);
+        $("#cpt2").css("left",400*con2X-5);
+        $("#cpt2").css("top",400*(1-con2Y)-5);
+        // console.log(con1X+","+con1Y+","+con2X+","+con2Y);
+        drawBezier(con1X,con1Y,con2X,con2Y);
+      });
+
+      // linear：线性过渡。等同于贝塞尔曲线(0.0, 0.0, 1.0, 1.0)
+      // ease：平滑过渡。等同于贝塞尔曲线(0.25, 0.1, 0.25, 1.0)
+      // ease-in：由慢到快。等同于贝塞尔曲线(0.42, 0, 1.0, 1.0)
+      // ease-out：由快到慢。等同于贝塞尔曲线(0, 0, 0.58, 1.0)
+      // ease-in-out：由慢到快再到慢。等同于贝塞尔曲线(0.42, 0, 0.58, 1.0)
+      function drawBezier(con1X,con1Y,con2X,con2Y){
+        context.clearRect(0,0,width,height);
+        context.putImageData(background,0,0);
+        context.strokeStyle = "#ff0000";
+        context.beginPath();
+        context.moveTo(0,400);
+        context.bezierCurveTo(400*con1X,400*(1-con1Y),400*con2X,400*(1-con2Y),400,0);
+        context.stroke();
+        context.strokeStyle = "#00ff00";
+        context.beginPath();
+        context.moveTo(0,400);
+        context.lineTo(400*con1X,400*(1-con1Y));
+        context.stroke();
+        context.beginPath();
+        context.moveTo(400,0);
+        context.lineTo(400*con2X,400*(1-con2Y));
+        context.stroke();
+      }
+    });
+  </script>
+</body>
+</html>
