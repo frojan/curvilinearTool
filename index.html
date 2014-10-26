@@ -45,6 +45,7 @@
     border-radius: 100px;
   }
   .display{
+    position: relative;
     float: left;
     margin-left: 40px;
     width: 400px;
@@ -52,6 +53,41 @@
     background-color: #eeeeee;
 
   }
+  .ball_parent{
+    position: absolute;
+    width: 100%;
+    height:100%;
+
+    -webkit-animation: animationX linear 2s infinite;
+  }
+  .ball{
+    position: absolute;
+    background-color: red;
+    width: 20px;
+    height:20px;
+    border-radius: 100px;
+    bottom: -10px;
+    left: -10px;
+
+    -webkit-animation: animationY cubic-bezier(0.86,0.096,0.9625,0.21) 2s infinite;
+  }
+  @-webkit-keyframes animationX {
+      0% {
+       -webkit-transform: translateX(0);
+      }
+      100% {
+       -webkit-transform: translateX(400px);
+      }
+    }
+    @-webkit-keyframes animationY {
+      0% {
+       -webkit-transform: translateY(0);
+      }
+      100% {
+       -webkit-transform: translateY(-400px);
+      }
+ 
+    }
   .clearfix{
     content: ".";
     display: block;
@@ -81,7 +117,12 @@
   </div>
 
   <div class="display">
-    
+    <div class="ball_parent">
+      <div class="ball"></div>
+    </div>
+    <canvas id="displayCanvas" width='400' height='400'>
+      Canvas not supported
+    </canvas>
   </div>
   
 
@@ -194,6 +235,9 @@
         $("#cpt2").css("top",400*(1-con2Y)-5);
         // console.log(con1X+","+con1Y+","+con2X+","+con2Y);
         drawBezier(con1X,con1Y,con2X,con2Y);
+
+        // var ani = "animationY cubic-bezier("+con1X+","+con1Y+","+con2X+","+con2Y+") 2s infinite";
+        // $(".ball").css("-webkit-animation",ani);
       });
 
       // linear：线性过渡。等同于贝塞尔曲线(0.0, 0.0, 1.0, 1.0)
@@ -219,6 +263,26 @@
         context.lineTo(400*con2X,400*(1-con2Y));
         context.stroke();
       }
+
+      //draw ball run path
+      var displayCanvas = document.getElementById('displayCanvas');
+      var displayContext = displayCanvas.getContext('2d');
+      var oldX,oldY,tarX,tarY;
+      // var displayRect = canvas.getBoundingClientRect();
+      displayContext.clearRect(0,0,width,height);
+      displayContext.putImageData(background,0,0);
+      displayContext.strokeStyle = "#00ff00";
+      var loop = setInterval(function(){
+        tarX = $('.ball_parent').position().left;
+        tarY = $('.ball').position().top+10;
+        // console.log(tarX+","+tarY);
+        displayContext.beginPath();
+        displayContext.moveTo(oldX,oldY);
+        displayContext.lineTo(tarX,tarY);
+        displayContext.stroke();
+        oldX = tarX;
+        oldY = tarY;
+      },10);
     });
   </script>
 </body>
